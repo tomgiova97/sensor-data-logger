@@ -13,10 +13,11 @@ public class LogService {
     LogRepository logRepository;
 
     public Log createLog(Log log) {
-        Log savedLog = logRepository.save(log);
-        Date logDateConvertedToRomeTimezone = new Date(savedLog.getDateTime().getTime() + 60*60*1000); //Adding one hour to the UTC time
-        savedLog.setDateTime(logDateConvertedToRomeTimezone);
-        return savedLog;
+        Date currentdate = new Date();
+        Date currentDateConvertedToRomeTimezone = new Date(currentdate.getTime() + 60*60*1000); //Adding one hour to the UTC time
+        log.setDateTime(currentDateConvertedToRomeTimezone);
+
+        return logRepository.save(log);
     }
 
 }
