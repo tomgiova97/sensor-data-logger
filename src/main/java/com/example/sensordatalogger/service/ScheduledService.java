@@ -11,11 +11,12 @@ import org.slf4j.LoggerFactory;
 @Service
 public class ScheduledService {
     private static final Logger log = LoggerFactory.getLogger(ScheduledService.class);
+    private final int DELETE_ALL_INTERVAL_MS = 60 * 60 * 1000;
     @Autowired
     LogRepository logRepository;
 
-    //@Scheduled(fixedRate = 5000) // Execute every 5 seconds
-    @Scheduled(cron = "0 0 0 * * ?") // Execute every day at midnight
+    @Scheduled(fixedRate = DELETE_ALL_INTERVAL_MS) // Execute every (DELETE_ALL_INTERVAL_MS /1000) seconds
+//    @Scheduled(cron = "0 0 0 * * ?") // Execute every day at midnight
     public void deleteAllLogs() {
         log.info("Deleting all documents...");
         logRepository.deleteAll();

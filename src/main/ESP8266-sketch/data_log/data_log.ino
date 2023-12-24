@@ -4,22 +4,21 @@
 
 #define PIN_1 D5
 
-const char *ssid = "WI_FI_NAME";
-const char *password = "WI_FI_PASSWORD";
-const char *logEndpoint = "http://192.168.1.246:8081/api/log";
-const char *dateEndpoint = "http://192.168.1.246:8081/api/log/currentDate";
-const char *testEndpoint = "https://random-data-api.com/api/v2/beers" ;
+const char *ssid = "TIM-20231077";
+const char *password = "CK6Jqj2omIXbfwYITRobv5rt";
+// const char *ssid = "Infostrada-0CA800";
+// const char *password = "KHXTMN77ME";
+// const char *logEndpoint = "http://192.168.1.248:8081/api/log";
+const char *logEndpoint = "https://sensor-data-logger.onrender.com/api/log";
 
 
 void setup() {
-  // pinMode(PIN_1, OUTPUT);
-  // digitalWrite(PIN_1, HIGH);
+  pinMode(PIN_1, OUTPUT);
 
   Serial.begin(115200);
 
-  // // Reset ESP8266
+  // Reset ESP8266
   // ESP.restart();
-
   // delay(1000);  // Give some time for the reset
 
   // Connect to Wi-Fi
@@ -34,57 +33,31 @@ void setup() {
 
 void loop() {
   if (WiFi.status() == WL_CONNECTED) {
-    // WiFiClient client; // Create a WiFiClient object
-    // HTTPClient http;
-
-    String currentDateEpochMs = getDate(dateEndpoint);
-
-    // If the retrieved date is valid, 
-    if (currentDateEpochMs != "") {
-      logData(logEndpoint, 5, currentDateEpochMs);
-    }
+    digitalWrite(PIN_1, HIGH);
+    logData(logEndpoint, 5);
   }
 
-  delay(600 * 1000);  // Wait for a moment before making the next request
+  delay(30 * 1000);  // Wait for a moment before making the next request
 }
 
-String getDate( const char* url) {
-  WiFiClient client; // Create a WiFiClient object
+
+void logData(const char* url, float voltage) {
+  digitalWrite(PIN_1, LOW);
+
+  WiFiClientSecure client; // Create a WiFiClient object
+  client.setInsecure();
+  client.connect(url, 443);
+
   HTTPClient http;
-  
-  // Print the URL before making the request
-  Serial.print("Calling URL: ");
-  Serial.println(dateEndpoint);
-  
-  // Make a GET request to the API
-  http.begin(client, url);  // Pass the URL directly
-  http.addHeader("Content-Type", "application/json");  // Optional, set the content type if needed
-  int httpCode = http.GET();
-  String payload = "";
 
-  if (httpCode > 0) {
-    if (httpCode == HTTP_CODE_OK) {
-      payload = http.getString();
+  // WiFiClient client; // Create a WiFiClient object
+  // HTTPClient http;
 
-      Serial.println("Response: " + payload);
-    } else {
-      Serial.println("HTTP error code: " + String(httpCode));
-    }
-  } else {
-    Serial.println("Failed to connect to API");
-  }
-  http.end();
-  return payload;
-}
-
-void logData(const char* url, float voltage, String dateEpochMs) {
-  WiFiClient client; // Create a WiFiClient object
-  HTTPClient http;
   StaticJsonDocument<200> jsonDocument; //JSON document with a capacity of 200 bytes
 
   // Add float and long values to the JSON object
   jsonDocument["value"] = voltage;
-  jsonDocument["dateTime"] = dateEpochMs; 
+  // jsonDocument["dateTime"] = dateEpochMs;
 
   // Serialize the JSON object to a string
   String jsonData;
@@ -106,4 +79,5 @@ void logData(const char* url, float voltage, String dateEpochMs) {
 
   // End the request
   http.end();
+  digitalWrite(PIN_1, HIGH);
 }
