@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 @Service
 public class ScheduledService {
     private static final Logger log = LoggerFactory.getLogger(ScheduledService.class);
-    private final int DELETE_ALL_INTERVAL_MS = 60 * 60 * 1000;
+    private final int DELETE_ALL_INTERVAL_MS = 14 * 60 * 1000;
     @Autowired
     LogRepository logRepository;
 
