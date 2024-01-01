@@ -1,29 +1,48 @@
 package com.example.sensordatalogger.service;
 
-import com.example.sensordatalogger.model.Log;
+import com.example.sensordatalogger.model.CurrentLog;
+import com.example.sensordatalogger.model.InputLog;
+import com.example.sensordatalogger.model.AbstractLog;
+import com.example.sensordatalogger.model.VoltageLog;
+import com.example.sensordatalogger.repository.CurrentLogRepository;
+import com.example.sensordatalogger.repository.VoltageLogRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.example.sensordatalogger.repository.LogRepository;
-
-import java.util.Date;
 
 @Service
 public class LogService {
     private static final Logger logger = LoggerFactory.getLogger(LogService.class);
+
     @Autowired
-    LogRepository logRepository;
+    VoltageLogRepository voltageLogRepository;
+    @Autowired
+    CurrentLogRepository currentLogRepository;
 
-    public Log createLog(Log log) {
+    public AbstractLog createLog(InputLog inputLog) {
         logger.info("Creating log entry...");
-        Date currentdate = new Date();
-        Date currentDateConvertedToRomeTimezone = new Date(currentdate.getTime() + 60*60*1000); //Adding one hour to the UTC time
-        log.setDateTime(currentDateConvertedToRomeTimezone);
 
+        AbstractLog abstractLog;
+        if (inputLog.getMeasureType().equalsIgnoreCase("CURRENT")) {
+            abstractLog = currentLogRepository.save(CurrentLog.fromInputLog(inputLog));
+        } else if (inputLog.getMeasureType().equalsIgnoreCase("VOLTAGE")) {
+            abstractLog = voltageLogRepository.save(VoltageLog.fromInputLog(inputLog));
+        }
+        else {throw new RuntimeException("Measure type is not valid");}
         logger.info("Log entry successfully created");
 
-        return logRepository.save(log);
+        return abstractLog;
     }
 
+    public AbstractLog getMostRecentMeasure(String measureType) {
+        AbstractLog abstractLog;
+        if (measureType.equalsIgnoreCase("CURRENT")) {
+            abstractLog = currentLogRepository.findFirstByOrderByDateTimeDesc().orElse(new CurrentLog());
+        } else if (measureType.equalsIgnoreCase("VOLTAGE")) {
+            abstractLog = voltageLogRepository.findFirstByOrderByDateTimeDesc().orElse(new CurrentLog());
+        }
+        else {throw new RuntimeException("Measure type is not valid");}
+        return abstractLog;
+    }
 }
